@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 import os
-from telegram import Update, InputFile
+from telegram import Update, InputFile, Bot
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, Dispatcher
 from PyPDF2 import PdfReader
 from transformers import pipeline
@@ -96,8 +96,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 app = Flask(__name__)
 
 # Telegram bot setup
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # e.g. https://yourdomain.com/webhook
+TOKEN = "7649581953:AAEDP-aBEtjDsDkPGedA7Fz_rGr37eDS-cE"
+WEBHOOK_URL = "https://test-summary-bot.onrender.com"
 
 application = ApplicationBuilder().token(TOKEN).build()
 application.add_handler(CommandHandler("start", start))
