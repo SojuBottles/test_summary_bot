@@ -4,4 +4,5 @@ transformers==4.40.2
 torch==2.3.0
 gtts==2.5.1
 Flask==3.0.3
-python-dotenv==1.0.1 
+python-dotenv==1.0.1
+openai==1.23.6 

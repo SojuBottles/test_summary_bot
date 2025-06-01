@@ -11,6 +11,7 @@ from PyPDF2 import PdfReader
 from transformers import pipeline
 from gtts import gTTS
 from flask import Flask, request, jsonify
+import openai
 
 # Load environment variables
 load_dotenv()
@@ -51,24 +52,33 @@ def chunk_text(text: str, max_chunk: int = 1024) -> List[str]:
         chunks.append(current)
     return chunks
 
-# Text summarization
-summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
+# Summarization using OpenAI ChatGPT API
 def summarize_text(text: str) -> str:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        logger.error("OPENAI_API_KEY not set in environment.")
+        return "[Error: No OpenAI API key configured.]"
+    openai.api_key = api_key
     prompt = (
         "As an expert oil market trader, summarize the following document. "
         "Focus on key trading insights, market trends, and actionable information. "
         "If possible, mention any sources or references found in the document.\n\n"
+        f"Document:\n{text}\n\nSummary:"
     )
-    full_text = prompt + text
-    chunks = chunk_text(full_text)
-    summaries = []
-    for chunk in chunks:
-        try:
-            summary = summarizer(chunk, max_length=150, min_length=50, do_sample=False)
-            summaries.append(summary[0]['summary_text'])
-        except Exception as e:
-            logger.error(f"Summarization failed: {e}")
-    return "Oil Market Trader Summary:\n" + "\n".join(summaries)
+    print("[OPENAI] Sending summarization request to OpenAI API...")
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+            temperature=0.3
+        )
+        summary = response.choices[0].message.content.strip()
+        print("[OPENAI] Received summary from OpenAI API.")
+        return "Oil Market Trader Summary:\n" + summary
+    except Exception as e:
+        logger.error(f"OpenAI API call failed: {e}")
+        return "[Error: OpenAI summarization failed.]"
 
 # Text-to-speech
 def text_to_speech(text: str, output_path: str) -> str:
